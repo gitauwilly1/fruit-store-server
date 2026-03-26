@@ -17,6 +17,9 @@ mongoose.connect(MONGODB_URI)
     console.error('Error connecting to MongoDB:', error);
   });
 
+app.use(express.json());
+
+
 app.get('/', (req, res) => {
   res.json({ message: 'Welcome to the Fruit Store API' });
 });
@@ -46,11 +49,11 @@ app.post('/api/fruits', express.json(), (req, res) => {
     });
 });
 
-app.put('/api/fruits/:name', express.json(), (req, res) => {
-  const { name } = req.params;
-  const { price, quantity } = req.body;
+app.put('/api/fruits/:id', express.json(), (req, res) => {
+  const { id } = req.params;
+  const { name, price, quantity } = req.body;
 
-  Fruit.findOneAndUpdate({ name }, { price, quantity }, { new: true })
+  Fruit.findByIdAndUpdate(id, { name, price, quantity }, { new: true })
     .then((fruit) => {
       if (!fruit) {
         return res.status(404).json({ error: 'Fruit not found' });
@@ -59,6 +62,22 @@ app.put('/api/fruits/:name', express.json(), (req, res) => {
     })
     .catch((error) => {
       console.error('Error updating fruit:', error);
+      res.status(500).json({ error: 'Internal Server Error' });
+    });
+});
+
+app.delete('/api/fruits/:id', express.json(), (req, res) => {
+  const { id } = req.params;
+
+  Fruit.findByIdAndDelete(id)
+    .then((fruit) => {
+      if (!fruit) {
+        return res.status(404).json({ error: 'Fruit not found' });
+      }
+      res.json({ message: 'Fruit deleted successfully' });
+    })
+    .catch((error) => {
+      console.error('Error deleting fruit:', error);
       res.status(500).json({ error: 'Internal Server Error' });
     });
 });
